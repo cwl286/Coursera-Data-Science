@@ -1,0 +1,130 @@
+---
+title: "Practical Machine Learning Project"
+author: "Chris Gomes"
+date: "August 9, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Executive Summary
+
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement - a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, we use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways:
+
+* exactly according to the specification (Class A) 
+* throwing the elbows to the front (Class B) 
+* lifting the dumbbell only halfway (Class C) 
+* lowering the dumbbell only halfway (Class D) 
+* throwing the hips to the front (Class E)
+
+Our goal is to predict whether the lifts were performed correctly.
+
+## Data Loading and Processing
+
+We load the necessary libraries and download the data sets.
+
+```{r load libraries}
+library(caret)
+library(randomForest)
+```
+
+The data for this project come from this source: [http://groupware.les.inf.puc-rio.br/har](http://groupware.les.inf.puc-rio.br/har)
+
+```{r construct data sets}
+training <- read.csv('pml-training.csv', na.strings = c("NA", "#DIV/0!", ""), header=TRUE)
+testing <- read.csv('pml-testing.csv', na.strings = c("NA", "#DIV/0!", ""), header=TRUE)
+
+# str(training)
+```
+
+The variable we want to predict is the last one `classe`.
+
+### Data Cleaning
+
+We remove any columns that have missing values.
+
+```{r clean the data}
+training <- training[, colSums(is.na(training)) == 0]
+testing <- testing[, colSums(is.na(testing)) == 0]
+
+# str(training)
+```
+
+Next, we remove irrelevant data.
+
+```{r remove irrelevant columns}
+classe <- training$classe
+train_clean <- training[, sapply(training, is.numeric)]
+train_clean <- training[, -c(1:7)]
+train_clean$classe <- classe
+
+test_clean <- testing[, sapply(testing, is.numeric)]
+test_clean <- testing[, -c(1:7)]
+
+ str(test_clean)
+```
+
+This gives us clean training data with 19622 observations in 53 variables and clean test data with 20 observations in 53 variables.
+
+### Split the data
+
+We partition off part of the training data (30%) for cross-validation to assess the model's performance.
+
+```{r partion off the cross-validation set}
+set.seed(666) 
+index_train <- createDataPartition(train_clean$classe, p = 0.7, list = FALSE)
+train <- train_clean[index_train, ]
+valid <- train_clean[-index_train, ]
+
+# str(valid)
+```
+
+
+## Training the Model
+
+We will use the Random Forrest model since this will automatically select the important variables. We do a 5-fold cross validation (default setting in trainControl function is 10) when implementing the Random Forrest algorithm to save some computing time.
+
+```{r Train the Random Forrest Model, eval=TRUE}
+control <- trainControl(method = "cv", number = 5)
+rf_model <- randomForest(classe ~ ., data = train)
+print(rf_model)
+```
+
+### Cross Validation
+
+We apply cross validation on the data split above to determine the out-of-sample error of the model that we fit.
+
+```{r Cross Validation}
+cv_predict <- predict(rf_model, valid)
+cv_summary <- confusionMatrix(valid$classe, cv_predict)
+cv_summary
+```
+
+Let's look at the accuracy and out-of-sample-error.
+
+```{r Accuracy and OOSE}
+accuracy <- postResample(cv_predict, valid$classe)
+accuracy
+
+oose <- 1 - as.numeric(confusionMatrix(valid$classe, cv_predict)$overall[1])
+oose
+```
+
+For this data set, the accuracy is roughly 99.4% with out-of-sample error roughly 0.6%. This could be a consequence of high correlation between predictors.
+
+I attempted to use the Classification Tree model, but the the run time was too long (after 45 minutes, I stopped the program).
+
+## Predicition on the Test Set
+
+Finally, we test our model on the test data set.
+
+```{r Prediction on the Test Set}
+results <- predict(rf_model, test_clean)
+results
+```
+
+## References
+
+[1]  Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013.
