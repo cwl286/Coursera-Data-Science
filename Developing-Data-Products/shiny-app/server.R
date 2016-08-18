@@ -8,18 +8,17 @@
 #
 
 library(shiny)
+library(ggplot2)
 
-# Define server logic required to draw a histogram
+# Define server logic required to draw a graph
 shinyServer(function(input, output) {
    
   output$distPlot <- renderPlot({
     
-    # generate bins based on input$bins from ui.R
-    x    <- faithful[, 2] 
-    bins <- seq(min(x), max(x), length.out = input$bins + 1)
-    
-    # draw the histogram with the specified number of bins
-    hist(x, breaks = bins, col = 'darkgray', border = 'white')
+    # define a ggplot object
+    x    <- train_data[1:200,]
+    g <- ggplot(data = x, aes(stationname,rides))
+    g + geom_point(size = 4, alpha= 1/2, aes(color=daytype))
     
   })
   
