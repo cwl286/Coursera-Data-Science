@@ -8,12 +8,17 @@
 #
 
 library(shiny)
+library(ggplot2)
+
+train_data <- read.csv("./data/CTA_-_Ridership_-__L__Station_Entries_-_Daily_Totals.csv")
+
+train_data$date <- as.Date(train_data$date, "%m/%d/%Y")
 
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(
   
   # Application title
-  titlePanel("Old Faithful Gravy Data"),
+  titlePanel("CTA L Ridership By Station Since 2001"),
   
   # Sidebar with a slider input for number of bins 
   sidebarLayout(
