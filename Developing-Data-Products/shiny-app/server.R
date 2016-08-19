@@ -18,7 +18,7 @@ shinyServer(function(input, output) {
     # generate bins based on input$bins from ui.R
     x    <- train_data
     g <- ggplot(data = x, aes(ï..station_id, rides))
-    g + geom_point(size= 2, alpha = 1/2, aes(color= daytype))
+    g + geom_point(size= 2, alpha = 1/2, aes(color= daytype)) + theme_bw()
     
     # bins <- seq(min(x), max(x), length.out = input$bins + 1)
     
