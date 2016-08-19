@@ -9,6 +9,7 @@
 
 library(shiny)
 library(ggplot2)
+library(markdown)
 
 train_data <- read.csv("./data/CTA_-_Ridership_-__L__Station_Entries_-_Daily_Totals.csv")
 
@@ -17,46 +18,34 @@ train_data$date <- as.Date(train_data$date, "%m/%d/%Y")
 # Subset the data to entries after the Pink Line opened on June 25 2006
 train_data <- subset(train_data, date > "2006-06-24")
 
-# Add column for the train line (e.g. the Red Line)
-#train_data$line <- c("Red","Blue","Green","Orange","Brown","Pink","Purple","Yellow")
 
-#red_line <- c(41490, 41430, 41380, 41300, 41270, 41230, 41190, 41200, 41170, 41090, 
-#              41000, 40990, 40880, 40760, 40650, 40630, 40540, 40520, 40450, 40240, 40190, 
-#              40100, 40080)
-
-#green_line <- c(40020, 40030, 40130)
-
-#brown_line <- c(40090, )
-
-#blue_line <- c(40060, 40070, )
-
-#orange_line <- c(40120, )
-
-#yellow_line <- c(40140, )
-
-#pink_line <- c()
-
-#purple_line <- c()
-
-# Define UI for application that draws a histogram
-shinyUI(fluidPage(
-  
-  # Application title
-  titlePanel("CTA EL Ridership By Station Since 2006"),
-  
-  # Sidebar with a slider input for number of bins 
-  sidebarLayout(
-    sidebarPanel(
-       sliderInput("bins",
-                   "Number of bins:",
-                   min = 1,
-                   max = 50,
-                   value = 30)
-    ),
-    
-    # Show a plot of the generated distribution
-    mainPanel(
-       plotOutput("distPlot")
-    )
-  )
-))
+# Define UI for application that displays number of passengers at a given station
+shinyUI(navbarPage("Find out how many passengers board the El at a particular station",
+                   tabPanel("Table",
+                            
+                            # Sidebar
+                            sidebarLayout(
+                              sidebarPanel(
+                                helpText("Enter the date and choose the station you are interested in."),
+                                dateInput('date',
+                                          label = 'Information is available between June 25th, 2006 and April 30th, 2016',
+                                          value = "06-25-2006",
+                                          min = "06-25-2006", 
+                                          max = "04-30-2016",
+                                          format = "mm-dd-yyyy"
+                                ),
+                              ),
+                              
+                              
+                              mainPanel(
+                                dataTableOutput('table')
+                              )
+                            )
+                   ),
+                   tabPanel("About",
+                            mainPanel(
+                              includeMarkdown("about.md")
+                            )
+                   )
+)
+)   
