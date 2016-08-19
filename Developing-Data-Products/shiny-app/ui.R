@@ -42,7 +42,7 @@ train_data <- subset(train_data, date > "2006-06-24")
 shinyUI(fluidPage(
   
   # Application title
-  titlePanel("CTA L Ridership By Station Since 2001"),
+  titlePanel("CTA EL Ridership By Station Since 2006"),
   
   # Sidebar with a slider input for number of bins 
   sidebarLayout(
