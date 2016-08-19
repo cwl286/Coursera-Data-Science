@@ -16,14 +16,18 @@ shinyServer(function(input, output) {
   
   # Filter data based on selections
   output$table <- DT::renderDataTable(DT::datatable({
-    data <- train_data
+
     if (input$stat != "All") {
-      data <- data[data$stationname == input$stat,]
+      train_data <- train_data[train_data$stationname == input$stat,]
     }
     if (input$date != "All") {
-      data <- data[data$date == input$date,]
+      train_data <- train_data[train_data$date == input$date,]
     }
     data
   }))
+  
+  output$summary <- renderPrint({
+    summary(train_data)
+  })
   
 })
