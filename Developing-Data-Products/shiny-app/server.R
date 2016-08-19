@@ -9,22 +9,21 @@
 
 library(shiny)
 library(ggplot2)
+library(DT)
 
-# Define server logic required to draw a graph
+# Define a server for the Shiny app
 shinyServer(function(input, output) {
-   
-  output$distPlot <- renderPlot({
-    
-    # generate bins based on input$bins from ui.R
-    x    <- train_data
-    g <- ggplot(data = x, aes(ï..station_id, rides))
-    g + geom_point(size= 2, alpha = 1/2, aes(color= daytype)) + theme_bw()
-    
-    # bins <- seq(min(x), max(x), length.out = input$bins + 1)
-    
-    # draw the histogram with the specified number of bins
-    # hist(x, breaks = bins, col = 'darkgray', border = 'white')
-    
-  })
+  
+  # Filter data based on selections
+  output$table <- DT::renderDataTable(DT::datatable({
+    data <- train_data
+    if (input$stat != "All") {
+      data <- data[data$stationname == input$stat,]
+    }
+    if (input$date != "All") {
+      data <- data[data$date == input$date,]
+    }
+    data
+  }))
   
 })
