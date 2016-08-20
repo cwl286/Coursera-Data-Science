@@ -34,7 +34,7 @@ shinyServer(function(input, output) {
       train_data <- train_data[train_data$date == input$date1,]
     }
     g <- ggplot(data = train_data, aes(train_data$date, train_data$rides))
-    g + geom_point() + geom_smooth() + theme_bw()
+    g + geom_point(size=4, alpha= 1/2, aes(color=train_data$daytype)) + geom_smooth() + theme_bw()
   })
   
 })
