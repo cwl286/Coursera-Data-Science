@@ -23,7 +23,7 @@ shinyServer(function(input, output) {
     if (input$date != "All") {
       train_data <- train_data[train_data$date == input$date,]
     }
-    data
+    train_data
   }))
   
   output$summary <- renderPrint({
