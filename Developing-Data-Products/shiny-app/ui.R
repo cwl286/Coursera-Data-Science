@@ -26,7 +26,12 @@ shinyUI(
   navbarPage("CTA Rail Ridership in 2015",
              
     tabPanel("Statisitcs",
-                      verbatimTextOutput("summary")
+             selectInput(inputId = "n_breaks",
+                         label = "Number of bins in histogram (approximate):",
+                         choices = c(12, 52),
+                         selected = 12),
+             
+             plotOutput(outputId = "main_plot", height = "300px")
              ),
     
     tabPanel("Table",
