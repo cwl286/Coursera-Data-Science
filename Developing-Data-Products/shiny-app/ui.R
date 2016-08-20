@@ -34,14 +34,17 @@ red_line <- c('Sheridan',  'Morse', 'Sox-35th-Dan Ryan', '79th', 'Grand/State', 
 train_data <- train_data[train_data$stationname %in% red_line, ]
 # Define UI for application that displays number of passengers at a given station
 shinyUI(
-  navbarPage("CTA Rail Ridership in 2015",
+  navbarPage("CTA Red Line Ridership in 2015",
              
-    tabPanel("Statisitcs",
-             selectInput("date",
-                         "Date:",
+    tabPanel("Statistics",
+             selectInput("month",
+                         "Month:",
                          c("All",
-                           unique(as.character(train_data$date)))),
-             
+                           unique(as.character(months)))),
+             selectInput("stat1",
+                         "Station:",
+                         c("All",
+                           unique(as.character(train_data$stationname)))),
              plotOutput(outputId = "main_plot", height = "300px")
              ),
     
