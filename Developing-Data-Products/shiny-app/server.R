@@ -29,7 +29,7 @@ shinyServer(function(input, output) {
   output$main_plot <- renderPlot({
     
     g <- ggplot(data = train_data, aes(train_data$date, train_data$rides))
-    g + geom_point() + geom_smooth()
+    g + geom_point() + geom_smooth() + theme_bw()
   })
   
 })
