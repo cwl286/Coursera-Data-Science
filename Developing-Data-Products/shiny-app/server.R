@@ -27,8 +27,13 @@ shinyServer(function(input, output) {
   }))
   
   output$main_plot <- renderPlot({
-    
-    g <- ggplot(data = train_data, aes(months, train_data$rides))
+    if (input$stat1 != "All") {
+      train_data <- train_data[train_data$stationname == input$stat1,]
+    }
+    if (input$date1 != "All") {
+      train_data <- train_data[train_data$date == input$date1,]
+    }
+    g <- ggplot(data = train_data, aes(train_data$date, train_data$rides))
     g + geom_point() + geom_smooth() + theme_bw()
   })
   
