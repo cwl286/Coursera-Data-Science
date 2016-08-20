@@ -21,15 +21,17 @@ train_data$date <- as.Date(train_data$date, "%m/%d/%Y")
 train_data <- subset(train_data, date >= "2015-01-01" & date < "2016-01-01")
 train_data <- subset(train_data, select = -c(ï..station_id) )
 
+format(train_data$date, "%Y-%b-%d")
+months <- format(train_data$date,' %b')
 # Define UI for application that displays number of passengers at a given station
 shinyUI(
   navbarPage("CTA Rail Ridership in 2015",
              
     tabPanel("Statisitcs",
-             selectInput(inputId = "n_breaks",
-                         label = "Number of bins in histogram (approximate):",
-                         choices = c(12, 52),
-                         selected = 12),
+             selectInput("date",
+                         "Date:",
+                         c("All",
+                           unique(as.character(train_data$date)))),
              
              plotOutput(outputId = "main_plot", height = "300px")
              ),
