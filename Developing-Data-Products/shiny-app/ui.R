@@ -45,7 +45,7 @@ shinyUI(
                          "Station:",
                          c("All",
                            unique(as.character(train_data$stationname)))),
-             plotOutput(outputId = "main_plot", height = "300px")
+             plotOutput(outputId = "main_plot", height = "400px")
              ),
     
     tabPanel("Table",
