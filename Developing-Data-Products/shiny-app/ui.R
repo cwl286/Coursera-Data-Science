@@ -17,12 +17,21 @@ train_data <- read.csv("./data/CTA_-_Ridership_-__L__Station_Entries_-_Daily_Tot
 # Rename the levels of factor daytype to something more meaningful
 levels(train_data$daytype) <- c("Saturday", "Sunday/Holiday", "Weekday")
 train_data$date <- as.Date(train_data$date, "%m/%d/%Y")
+
 # Subset the data to entries after the Pink Line opened on June 25 2006
 train_data <- subset(train_data, date >= "2015-01-01" & date < "2016-01-01")
 train_data <- subset(train_data, select = -c(ï..station_id) )
 
 format(train_data$date, "%Y-%b-%d")
 months <- format(train_data$date,' %b')
+
+# Subset the data to entries for Red Line stations
+red_line <- c('Sheridan',  'Morse', 'Sox-35th-Dan Ryan', '79th', 'Grand/State', 'Berwyn', '95th/Dan Ryan', 'Washington/State', 'Wilson', 
+              'Jackson/State', 'Clark/Division', 'North/Clybourn', 'Granville', 'Lawrence', 'Thorndale', 'Howard', '63rd-Dan Ryan', '69th', 'Cermak-Chinatown', 
+              'Monroe/State', 'Garfield-Dan Ryan', 'Jarvis', 'Argyle', 'Fullerton', '47th-Dan Ryan', 'Loyola', 'Belmont-North Main', 'Bryn Mawr', 'Roosevelt', 
+              'Addison-North Main', '87th', 'Chicago/State', 'Harrison', 'Lake/State')
+
+train_data <- train_data[train_data$stationname %in% red_line, ]
 # Define UI for application that displays number of passengers at a given station
 shinyUI(
   navbarPage("CTA Rail Ridership in 2015",
