@@ -27,11 +27,9 @@ shinyServer(function(input, output) {
   }))
   
   output$main_plot <- renderPlot({
-    hist(train_data$date,
-         probability = TRUE,
-         breaks = as.numeric(input$n_breaks),
-         xlab = "Months(12)/Weeks(52)",
-         main = "Number of Riders")
+    
+    g <- ggplot(data = train_data, aes(train_data$date, train_data$rides))
+    g + geom_point() + geom_smooth()
   })
   
 })
