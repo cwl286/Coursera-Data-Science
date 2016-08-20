@@ -26,8 +26,12 @@ shinyServer(function(input, output) {
     train_data
   }))
   
-  output$summary <- renderPrint({
-    summary(train_data)
+  output$main_plot <- renderPlot({
+    hist(train_data$date,
+         probability = TRUE,
+         breaks = as.numeric(input$n_breaks),
+         xlab = "Months(12)/Weeks(52)",
+         main = "Number of Riders")
   })
   
 })
