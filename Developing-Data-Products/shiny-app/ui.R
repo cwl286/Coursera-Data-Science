@@ -22,9 +22,6 @@ train_data$date <- as.Date(train_data$date, "%m/%d/%Y")
 train_data <- subset(train_data, date >= "2015-01-01" & date < "2016-01-01")
 train_data <- subset(train_data, select = -c(ï..station_id) )
 
-format(train_data$date, "%Y-%b-%d")
-months <- format(train_data$date,' %b')
-
 # Subset the data to entries for Red Line stations
 red_line <- c('Sheridan',  'Morse', 'Sox-35th-Dan Ryan', '79th', 'Grand/State', 'Berwyn', '95th/Dan Ryan', 'Washington/State', 'Wilson', 
               'Jackson/State', 'Clark/Division', 'North/Clybourn', 'Granville', 'Lawrence', 'Thorndale', 'Howard', '63rd-Dan Ryan', '69th', 'Cermak-Chinatown', 
@@ -32,15 +29,18 @@ red_line <- c('Sheridan',  'Morse', 'Sox-35th-Dan Ryan', '79th', 'Grand/State', 
               'Addison-North Main', '87th', 'Chicago/State', 'Harrison', 'Lake/State')
 
 train_data <- train_data[train_data$stationname %in% red_line, ]
+
+format(train_data$date, "%Y-%b-%d")
+months <- format(train_data$date,' %b')
 # Define UI for application that displays number of passengers at a given station
 shinyUI(
   navbarPage("CTA Red Line Ridership in 2015",
              
     tabPanel("Statistics",
-             selectInput("month",
-                         "Month:",
+             selectInput("date1",
+                         "Date:",
                          c("All",
-                           unique(as.character(months)))),
+                           unique(as.character(train_data$date)))),
              selectInput("stat1",
                          "Station:",
                          c("All",
