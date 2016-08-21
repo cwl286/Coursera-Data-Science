@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Developing Data Products</title>
+  <meta charset="utf-8">
+  <meta name="description" content="Developing Data Products">
+  <meta name="author" content="Chris Gomes">
+  <meta name="generator" content="slidify" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/default.css" media="all" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/phone.css" 
+    media="only screen and (max-device-width: 480px)" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/slidify.css" >
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/tomorrow.css" />
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  <link rel=stylesheet href="./assets/css/ribbons.css"></link>
+
+  
+  <!-- Grab CDN jQuery, fall back to local if offline -->
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+  <script>window.jQuery || document.write('<script src="libraries/widgets/quiz/js/jquery.js"><\/script>')</script> 
+  <script data-main="libraries/frameworks/io2012/js/slides" 
+    src="libraries/frameworks/io2012/js/require-1.0.8.min.js">
+  </script>
+  
+  
+
+</head>
+<body style="opacity: 0">
+  <slides class="layout-widescreen">
+    
+    <!-- LOGO SLIDE -->
+        <slide class="title-slide segue nobackground">
+  <hgroup class="auto-fadein">
+    <h1>Developing Data Products</h1>
+    <h2>Slidify Presentation</h2>
+    <p>Chris Gomes<br/></p>
+  </hgroup>
+  <article></article>  
+</slide>
+    
+
+    <!-- SLIDES -->
+    <slide class="" id="slide-1" style="background:;">
+  <hgroup>
+    <h2>A Basic Shiny App</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>We built a Shiny app that looks at a subset of the Chicago Transit Authority&#39;s  &#39;L&#39; Station Entries - Daily Totals data set. The full set has over 790,000 rows.  We looked at the subset consisting of Red Line stations for the year 2015.</p>
+
+<p>The full data set can be found <a href="https://data.cityofchicago.org/Transportation/CTA-Ridership-L-Station-Entries-Daily-Totals/5neh-572f">here</a>.</p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="class" id="id" style="background:;">
+  <hgroup>
+    <h2>Using the App</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>We can do the following with our app, which can be found <a href="https://ugaliguy.shinyapps.io/shiny-app/">here</a>.  </p>
+
+<p>The source code can be found <a href="https://github.com/ugaliguy/Coursera-Data-Science/tree/master/Developing-Data-Products">here</a>.</p>
+
+<h3>Table</h3>
+
+<ul>
+<li>Look at the number of passengers on a given day</li>
+<li>Look at the number of passengers at a given station</li>
+<li>Reorder the columns of the table</li>
+</ul>
+
+<h3>Statistics</h3>
+
+<ul>
+<li>Plot the number of passengers at a particular station for the year 2015</li>
+<li>Observe trends in ridership with respect to the day of the week.</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="class" id="id" style="background:;">
+  <hgroup>
+    <h2>An Example - Table</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>The table below shows the ridership numbers on June 28th 2015 (for 10 of the 33 avaiable records).</p>
+
+<pre><code>##        ï..station_id        stationname       date        daytype rides
+## 751286         41230      47th-Dan Ryan 2015-06-28 Sunday/Holiday  2825
+## 751496         41300             Loyola 2015-06-28 Sunday/Holiday  3986
+## 751557         41320 Belmont-North Main 2015-06-28 Sunday/Holiday 36323
+## 751706         41380          Bryn Mawr 2015-06-28 Sunday/Holiday  4687
+## 751736         41400          Roosevelt 2015-06-28 Sunday/Holiday  9345
+## 751796         41420 Addison-North Main 2015-06-28 Sunday/Holiday 20435
+## 751826         41430               87th 2015-06-28 Sunday/Holiday  3861
+## 751886         41450      Chicago/State 2015-06-28 Sunday/Holiday 12217
+## 751976         41490           Harrison 2015-06-28 Sunday/Holiday  3389
+## 752066         41660         Lake/State 2015-06-28 Sunday/Holiday 18462
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="class" id="id" style="background:;">
+  <hgroup>
+    <h2>Example - Statistics</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>The plot below shows the ridership numbers for the Belmont-North Main station in 2015.</p>
+
+<p><img src="assets/fig/Display%20Plot-1.png" alt="plot of chunk Display Plot"></p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+    <slide class="backdrop"></slide>
+  </slides>
+  <div class="pagination pagination-small" id='io2012-ptoc' style="display:none;">
+    <ul>
+      <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=1 title='A Basic Shiny App'>
+         1
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=2 title='Using the App'>
+         2
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='An Example - Table'>
+         3
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='Example - Statistics'>
+         4
+      </a>
+    </li>
+  </ul>
+  </div>  <!--[if IE]>
+    <script 
+      src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js">  
+    </script>
+    <script>CFInstall.check({mode: 'overlay'});</script>
+  <![endif]-->
+</body>
+  <!-- Load Javascripts for Widgets -->
+  
+  <!-- LOAD HIGHLIGHTER JS FILES -->
+  <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- DONE LOADING HIGHLIGHTER JS FILES -->
+   
+  </html>

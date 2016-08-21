@@ -1,0 +1,82 @@
+---
+title       : Developing Data Products
+subtitle    : Slidify Presentation
+author      : Chris Gomes
+job         : 
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : []            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+---
+
+## A Basic Shiny App
+
+We built a Shiny app that looks at a subset of the Chicago Transit Authority's  'L' Station Entries - Daily Totals data set. The full set has over 790,000 rows.  We looked at the subset consisting of Red Line stations for the year 2015.
+
+The full data set can be found [here](https://data.cityofchicago.org/Transportation/CTA-Ridership-L-Station-Entries-Daily-Totals/5neh-572f).
+
+--- .class #id 
+
+## Using the App
+
+We can do the following with our app, which can be found [here](https://ugaliguy.shinyapps.io/shiny-app/).  
+
+The source code can be found [here](https://github.com/ugaliguy/Coursera-Data-Science/tree/master/Developing-Data-Products).
+
+### Table
+
+* Look at the number of passengers on a given day
+* Look at the number of passengers at a given station
+* Reorder the columns of the table
+
+### Statistics
+
+* Plot the number of passengers at a particular station for the year 2015
+* Observe trends in ridership with respect to the day of the week.
+
+--- .class #id 
+
+## An Example - Table
+
+The table below shows the ridership numbers on June 28th 2015 (for 10 of the 33 avaiable records).
+
+```{r Table Demo, echo=FALSE}
+train_data <- read.csv("./data/CTA_-_Ridership_-__L__Station_Entries_-_Daily_Totals.csv")
+levels(train_data$daytype) <- c("Saturday", "Sunday/Holiday", "Weekday")
+train_data$date <- as.Date(train_data$date, "%m/%d/%Y")
+# Subset the data to entries after the Pink Line opened on June 25 2006
+train_data <- subset(train_data, date >= "2015-01-01" & date < "2016-01-01")
+
+
+# Subset the data to entries for Red Line stations
+red_line <- c('Sheridan',  'Morse', 'Sox-35th-Dan Ryan', '79th', 'Grand/State', 'Berwyn', '95th/Dan Ryan', 'Washington/State', 'Wilson', 
+              'Jackson/State', 'Clark/Division', 'North/Clybourn', 'Granville', 'Lawrence', 'Thorndale', 'Howard', '63rd-Dan Ryan', '69th', 'Cermak-Chinatown', 
+              'Monroe/State', 'Garfield-Dan Ryan', 'Jarvis', 'Argyle', 'Fullerton', '47th-Dan Ryan', 'Loyola', 'Belmont-North Main', 'Bryn Mawr', 'Roosevelt', 
+              'Addison-North Main', '87th', 'Chicago/State', 'Harrison', 'Lake/State')
+
+train_data <- train_data[train_data$stationname %in% red_line, ]
+train_data1 <- train_data[train_data$date == '2015-06-28', ]
+
+tail(train_data1, 10)
+```
+
+
+--- .class #id 
+
+## Example - Statistics
+
+The plot below shows the ridership numbers for the Belmont-North Main station in 2015.
+
+```{r Display Plot, fig.width=10, fig.height=5, echo= FALSE}
+train_data2 <- train_data[train_data$stationname == "Belmont-North Main", ]
+  g <- ggplot(data = train_data2, aes(train_data2$date, train_data2$rides))
+    
+  # Note how multiline ggplot commands are broken up - no leading '+' on new line
+  g + geom_point(size=4, alpha= 1/2, aes(color=train_data2$daytype)) + 
+    geom_smooth(colour="#AC0000") + 
+    labs(title= 'CTA Red Line Ridership in 2015', x= 'Date', y= 'Number of Riders')  + 
+    labs(colour = "Type of Day") + theme_bw()
+```
+
