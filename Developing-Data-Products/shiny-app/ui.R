@@ -20,7 +20,7 @@ train_data$date <- as.Date(train_data$date, "%m/%d/%Y")
 
 # Subset the data to entries after the Pink Line opened on June 25 2006
 train_data <- subset(train_data, date >= "2015-01-01" & date < "2016-01-01")
-train_data <- subset(train_data, select = -c(ï..station_id) )
+#train_data <- subset(train_data, select = -c(ï..station_id) )
 
 # Subset the data to entries for Red Line stations
 red_line <- c('Sheridan',  'Morse', 'Sox-35th-Dan Ryan', '79th', 'Grand/State', 'Berwyn', '95th/Dan Ryan', 'Washington/State', 'Wilson', 
@@ -34,8 +34,22 @@ format(train_data$date, "%Y-%b-%d")
 months <- format(train_data$date,' %b')
 # Define UI for application that displays number of passengers at a given station
 shinyUI(
-  navbarPage("CTA Red Line Ridership in 2015",
-             
+  navbarPage("Developing Data Products - Shiny App",
+    tabPanel("About",
+                      fluidRow(
+                        column(6,
+                               includeMarkdown("about.md")
+                        ),
+                        column(3,
+                               img(class="img-polaroid",
+                                   src=paste0("http://farm8.static.flickr.com/7525/16111190931_3c78bcde8c.jpg")),
+                               tags$small(
+                                 a(href="http://farm8.static.flickr.com/7525/16111190931_3c78bcde8c.jpg")
+                               )
+                        )
+                      )
+             ),
+    
     tabPanel("Statistics",
              selectInput("date1",
                          "Date:",
@@ -69,21 +83,8 @@ shinyUI(
             fluidRow(
               DT::dataTableOutput("table")
               )
-            ),
+            )
     
-    tabPanel("About",
-             fluidRow(
-               column(6,
-                      includeMarkdown("about.md")
-               ),
-               column(3,
-                      img(class="img-polaroid",
-                          src=paste0("http://farm8.static.flickr.com/7525/16111190931_3c78bcde8c.jpg")),
-                      tags$small(
-                        a(href="http://farm8.static.flickr.com/7525/16111190931_3c78bcde8c.jpg")
-                      )
-               )
-             )
-    )
+    
   )
 )
