@@ -85,6 +85,12 @@ We look at summaries and word distributions for each file.
 ```{r summaries and plots}
 summary(blog_words)
 qplot(blog_words, binwidth=1, xlim=c(1, 100))
+
+summary(news_words)
+qplot(news_words, binwidth=1, xlim=c(1, 100))
+
+summary(twitter_words)
+qplot(twitter_words, binwidth=1, xlim=c(1, 100))
 ```
 
 
