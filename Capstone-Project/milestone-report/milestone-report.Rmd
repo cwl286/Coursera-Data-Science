@@ -1,0 +1,56 @@
+---
+title: "Capstone Project Milestone Report"
+author: "Chris Gomes"
+date: "August 29, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Abstract
+
+We download the data sets that will be used to construct a prediction app. We clean the data and then perform some exploratory data analysis. We begin to think about how to build the algorithm for 
+our app.
+
+## Data Processing
+
+### Download the Data Sets
+
+The data is stored in a zip file which may be downloaded [here](https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip).
+
+```{r download, cache=TRUE}
+src_file <- "https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip"
+dest_file <- "capstone-data.zip"
+
+# Download and extract the files
+download.file(src_file, dest_file)
+unzip(dest_file)
+```
+
+Let's see which files we've downloaded.
+```{r inspect the extracted files, cache=TRUE}
+unzip(dest_file, list = TRUE )
+```
+
+We consider only the Enlish language files.
+```{r inspect the English language files, cache=TRUE}
+list.files("final")
+list.files("final/en_US")
+```
+
+### Save the English Language Files
+
+We save the text data to three files: `blogs`, `news`, and `twitter`.
+```{r Create the files blogs, news, and twitter, cache=TRUE}
+blogs <- readLines("final/en_US/en_US.blogs.txt", encoding = "UTF-8", skipNul=TRUE)
+news <- readLines("final/en_US/en_US.news.txt", encoding = "UTF-8", skipNul=TRUE)
+twitter <- readLines("final/en_US/en_US.twitter.txt", encoding = "UTF-8", skipNul=TRUE)
+
+# save the data to an .RData files
+save(blogs, file="blogs.RData")
+save(news, file="news.RData")
+save(twitter, file="twitter.RData")
+```
+
