@@ -9,6 +9,11 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r load libraries}
+library(ggplot2)
+library(stringi)
+```
+
 ## Abstract
 
 We download the data sets that will be used to construct a prediction app. We clean the data and then perform some exploratory data analysis. We begin to think about how to build the algorithm for 
@@ -53,4 +58,34 @@ save(blogs, file="blogs.RData")
 save(news, file="news.RData")
 save(twitter, file="twitter.RData")
 ```
+
+## Some Basic Statistics
+
+First, we look at properties of the files themselves.
+
+```{r file properties, cache=TRUE}
+# Check the files sizes
+blogs_size <- file.info("final/en_US/en_US.blogs.txt")$size / 1024.0 / 1024.0
+news_size <- file.info("final/en_US/en_US.news.txt")$size / 1024.0 / 1024.0
+twitter_size <- file.info("final/en_US/en_US.twitter.txt")$size / 1024.0 / 1024.0
+
+# Use stringi to get data about numbers of lines and word counts for each file
+stri_stats_general(blogs)
+stri_stats_general(news)
+stri_stats_general(twitter)
+
+# word counts
+blog_words <- stri_count_words(blogs)
+news_words <- stri_count_words(news)
+twitter_words <- stri_count_words(twitter)
+```
+
+We look at summaries and word distributions for each file.
+
+```{r summaries and plots}
+summary(blog_words)
+qplot(blog_words, binwidth=1, xlim=c(1, 100))
+```
+
+
 
