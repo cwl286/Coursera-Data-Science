@@ -12,6 +12,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r load libraries}
 library(ggplot2)
 library(stringi)
+library(tm)
+library(wordcloud)
 ```
 
 ## Abstract
@@ -59,7 +61,8 @@ save(news, file="news.RData")
 save(twitter, file="twitter.RData")
 ```
 
-## Some Basic Statistics
+
+## Basic Statistics
 
 First, we look at properties of the files themselves.
 
@@ -80,6 +83,7 @@ news_words <- stri_count_words(news)
 twitter_words <- stri_count_words(twitter)
 ```
 
+
 We look at summaries and word distributions for each file.
 
 ```{r summaries and plots}
@@ -90,8 +94,61 @@ summary(news_words)
 qplot(news_words, binwidth=1, xlim=c(1, 100))
 
 summary(twitter_words)
-qplot(twitter_words, binwidth=1, xlim=c(1, 100))
+qplot(twitter_words, binwidth=1, xlim=c(1, 30))
 ```
 
+### Data Sampling
 
+Given the large  sizes of these files, we sample 10,000 lines from each of them in order to improve data processing efficiency.
+
+```{r create sample file, cache=TRUE}
+blogs_samp <- blogs[sample(1:length(blogs),10000)]
+news_samp <- news[sample(1:length(news),10000)]
+twitter_samp <- twitter[sample(1:length(twitter),10000)]
+all_samp <- c(blogs_samp, news_samp, twitter_samp)
+
+# Save the sampled data to an .RData files
+save(all_samp, file="all_samp.RData")
+
+# Statistics for the sample
+stri_stats_general(all_samp)
+samp_words <- stri_count_words(all_samp)
+
+summary(samp_words)
+qplot(samp_words, binwidth=1, xlim=c(1, 100))
+```
+
+## Data Cleaning
+
+It is from this sample that we construct our corpus. WE use the `tm` (text mining) library to perform the following transformations:
+
+* Convert all words to lower case
+* Strip away all white space
+* Strip away all punctuation
+* Strip away all numbers
+* Strip way various non-alphanumeric characters
+* Remove stop words
+* Strip away all urls
+
+```{r data cleaning}
+corp <- Corpus("all_samp.RData")
+
+# Perform the transformations
+corp <- tm_map(corp, content_transformer(tolower))
+corp <- tm_map(corp, stripWhitespace)
+corp <- tm_map(corp, removePunctuation)
+corp <- tm_map(corp, removeNumbers)
+# The characters /, @, |, and # can appear in email and tweets
+special_chars <- content_transformer(function(x, pattern) gsub(pattern, " ", x))
+corp <- tm_map(corp, special_chars, "#|/|@|\\|")
+
+corp <- tm_map(corp, removeWords, stopwords("english"))
+
+# See http://www.rdatamining.com/books/rdm/faq/removeurlsfromtext
+removeURL <- function(x) gsub("http[[:alnum:][:punct:]]*", "", x) 
+corp <- tm_map(corp, content_transformer(removeURL))
+
+# Save the cleaned corpus
+writeCorpus(corp)
+```
 
