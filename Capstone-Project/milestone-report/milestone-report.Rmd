@@ -107,8 +107,9 @@ news_samp <- news[sample(1:length(news),10000)]
 twitter_samp <- twitter[sample(1:length(twitter),10000)]
 all_samp <- c(blogs_samp, news_samp, twitter_samp)
 
-# Save the sampled data to an .RData files
-save(all_samp, file="all_samp.RData")
+# Save the sampled data to a .txt files
+#save(all_samp, file="all_samp.txt")
+writeLines(all_samp, "./sample/all_samp.txt")
 
 # Statistics for the sample
 stri_stats_general(all_samp)
@@ -130,8 +131,10 @@ It is from this sample that we construct our corpus. WE use the `tm` (text minin
 * Remove stop words
 * Strip away all urls
 
-```{r data cleaning}
-corp <- Corpus("all_samp.RData")
+```{r data cleaning, eval=FALSE}
+cname <- file.path("")
+corp <- Corpus(DirSource(cname))
+#corp <- Corpus("all_samp.RData")
 
 # Perform the transformations
 corp <- tm_map(corp, content_transformer(tolower))
