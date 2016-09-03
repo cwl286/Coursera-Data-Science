@@ -14,12 +14,14 @@ library(ggplot2)
 library(stringi)
 library(tm)
 library(wordcloud)
+library(RWeka)
 ```
 
 ## Abstract
 
-We download the data sets that will be used to construct a prediction app. We clean the data and then perform some exploratory data analysis. We begin to think about how to build the algorithm for 
-our app.
+We download the data sets that will be used to construct a prediction app. We clean the data and then perform some exploratory data analysis. We begin to think about how to build the algorithm for our app.
+
+For the sake of brevity, I have suppressed the display of most of the code.
 
 ## Data Processing
 
@@ -47,59 +49,33 @@ list.files("final")
 list.files("final/en_US")
 ```
 
-
-## Data Cleaning
-
-We clean the data in the `en_US` folder. We use the text mining library `tm` to perform the following transformations:
-
-* Convert all words to lower case
-* Strip away all white space
-* Strip away all punctuation
-* Strip away all numbers
-* Strip way various non-alphanumeric characters
-* Remove stop words
-* Strip away all urls
-* Remove profanity
-
-```{r data cleaning}
-corp <- VCorpus(DirSource("../final/en_US", encoding = "UTF-8"), readerControl = list(language = "eng"))
-
-# Perform the transformations
-corp <- tm_map(corp, content_transformer(tolower))
-corp <- tm_map(corp, stripWhitespace)
-corp <- tm_map(corp, removePunctuation)
-corp <- tm_map(corp, removeNumbers)
-# The characters /, @, |, and # can appear in email and tweets
-special_chars <- content_transformer(function(x, pattern) gsub(pattern, " ", x))
-corp <- tm_map(corp, special_chars, "#|/|@|\\|")
-
-corp <- tm_map(corp, removeWords, stopwords("english"))
-
-# See http://www.rdatamining.com/books/rdm/faq/removeurlsfromtext
-removeURL <- function(x) gsub("http[[:alnum:][:punct:]]*", "", x) 
-corp <- tm_map(corp, content_transformer(removeURL))
-
-
-# Save the cleaned corpus
-
-```
-
-
-
-### Save the English Language Files
-
-We save the text data to three files: `blogs`, `news`, and `twitter`.
-```{r Create the files blogs, news, and twitter, cache=TRUE}
+```{r create data files, cache=TRUE}
+#Read in blogs and twitter files
 blogs <- readLines("final/en_US/en_US.blogs.txt", encoding = "UTF-8", skipNul=TRUE)
 twitter <- readLines("final/en_US/en_US.twitter.txt", encoding = "UTF-8", skipNul=TRUE)
-news <- readLines("final/en_US/en_US.news.txt", encoding = "UTF-8", skipNul=TRUE)
 
+#Read the news file, using binary mode as there are special characters in the text
+con<-file("final/en_US/en_US.news.txt", open="rb")
+news<-readLines(con, encoding="UTF-8")
+close(con)
+rm(con)
+```
 
-# save the data to an .txt files
+### Convert all characters to ASCII and save to text files
+
+This is necessary since the news file had characters (emoticons) that were causing this rogram to crash.
+```{r eliminate non-Roman charaters, cache=TRUE}
+
+blogs <- iconv(blogs, "latin1", "ASCII", sub="")
+news <- iconv(news, "latin1", "ASCII", sub="")
+twitter <- iconv(twitter, "latin1", "ASCII", sub="")
+
+# save the data to .txt files
 save(blogs, file="blogs.txt")
 save(news, file="news.txt")
 save(twitter, file="twitter.txt")
 ```
+
 
 ## Basic Statistics
 
@@ -145,7 +121,7 @@ blogs_samp <- blogs[sample(1:length(blogs),10000)]
 news_samp <- news[sample(1:length(news),10000)]
 twitter_samp <- twitter[sample(1:length(twitter),20000)]
 all_samp <- c(blogs_samp, news_samp, twitter_samp)
-
+save(all_samp, file="all_samp.txt")
 # Save the sampled data to a .txt files
 writeLines(all_samp, "../sample/all_samp.txt")
 
@@ -156,3 +132,69 @@ samp_words <- stri_count_words(all_samp)
 summary(samp_words)
 qplot(samp_words, binwidth=1, xlim=c(1, 100))
 ```
+
+
+## Data Cleaning and Corpus Building
+
+We create a corpus from the `all_samp.txt` file and then clean it. We use the text mining library `tm` to perform the following transformations:
+
+* Convert all words to lower case
+* Strip away all white space
+* Strip away all punctuation
+* Strip away all numbers
+* Strip way various non-alphanumeric characters
+* Remove stop words
+* Strip away all urls
+* Remove profanity
+
+```{r data cleaning, cache=FALSE}
+corp <- Corpus(VectorSource(list(all_samp)))
+
+# Perform the transformations
+corp <- tm_map(corp, content_transformer(tolower))
+corp <- tm_map(corp, stripWhitespace)
+corp <- tm_map(corp, removePunctuation)
+corp <- tm_map(corp, removeNumbers)
+# The characters /, @, |, and # can appear in email and tweets
+special_chars <- content_transformer(function(x, pattern) gsub(pattern, " ", x))
+corp <- tm_map(corp, special_chars, "#|/|@|\\|")
+
+corp <- tm_map(corp, removeWords, stopwords("english"))
+
+# See http://www.rdatamining.com/books/rdm/faq/removeurlsfromtext
+removeURL <- function(x) gsub("http[[:alnum:][:punct:]]*", "", x) 
+corp <- tm_map(corp, content_transformer(removeURL))
+
+# Remove profanities
+# The list used can be found here:  http://www.freewebheaders.com/full-list-of-bad-words-banned-by-google/ 
+
+profanities <- read.delim("bad-words-banned-by-google.txt",sep = ":",header = FALSE)
+profanities <- profanities[,1]
+corp <- tm_map(corp, removeWords, profanities)
+
+# Save the cleaned corpus
+#writeCorpus(corp, path = "../sample", filenames="corp.txt")
+#corp <- readLines("corp.txt")
+ 
+```
+
+
+## N-Gram Tokenization
+
+We use unigrams, bigrams, and trigrams to find word frequencies and astrong associations (i.e. correlations) bewtween words.
+
+```{r n-gram tokenization, cache=TRUE}
+# For more information, see: https://cran.r-project.org/web/packages/tm/vignettes/tm.pdf
+
+tdm <- TermDocumentMatrix(corp)
+
+
+unidtm <- NGramTokenizer(tdm, Weka_control(min = 1, max = 1))
+
+bidtm <- NGramTokenizer(tdm, Weka_control(min = 2, max = 2))
+
+tridtm <- NGramTokenizer(tdm, Weka_control(min = 3, max = 3))
+
+head(unidtm,10)
+```
+
