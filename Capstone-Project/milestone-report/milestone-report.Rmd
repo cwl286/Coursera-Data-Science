@@ -187,14 +187,16 @@ We use unigrams, bigrams, and trigrams to find word frequencies and astrong asso
 # For more information, see: https://cran.r-project.org/web/packages/tm/vignettes/tm.pdf
 
 tdm <- TermDocumentMatrix(corp)
+tdm <- removeSparseTerms(tdm, 0.75)
+inspect(tdm)
 
+uni <- NGramTokenizer(corp, Weka_control(min = 1, max = 1))
+str(uni)
 
-unidtm <- NGramTokenizer(tdm, Weka_control(min = 1, max = 1))
+bi <- NGramTokenizer(corp, Weka_control(min = 2, max = 2))
+str(bi)
 
-bidtm <- NGramTokenizer(tdm, Weka_control(min = 2, max = 2))
-
-tridtm <- NGramTokenizer(tdm, Weka_control(min = 3, max = 3))
-
-head(unidtm,10)
+tri <- NGramTokenizer(corp, Weka_control(min = 3, max = 3))
+str(tri)
 ```
 
