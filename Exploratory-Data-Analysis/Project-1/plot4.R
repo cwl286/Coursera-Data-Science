@@ -43,3 +43,5 @@ plot(date_time, global_reactive_power, xlab = "datetime", ylab = "Global_reactiv
 # Copy plot to a png file
 dev.copy(png, file="plot4.png", height=480, width=480)
 dev.off()
+
+
