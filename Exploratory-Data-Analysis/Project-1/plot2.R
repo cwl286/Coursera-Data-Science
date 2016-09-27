@@ -20,3 +20,5 @@ plot(date_time, graph_data$Global_active_power, xlab = "", ylab = "Global Active
 # Copy histogram to a png file
 dev.copy(png, file="plot2.png", height=480, width=480)
 dev.off()
+
+
