@@ -1,0 +1,146 @@
+---
+title: "Storm Data Peer Assesment 2"
+output: html_document
+---
+
+# Impact of Severe Weather Events on Public Health and Economy in the USA
+
+### Synopsis
+
+We analyze the impact of different weather events on the public health and the economy of thte United States.
+We use data from the U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database. We look at estimates of fatalities, injuries, and property damage. 
+
+We address the following questions:
+
+1. Across the United States, which types of events (as indicated in the <code>EVTYPE</code> variable) are most harmful with respect to population health?
+
+2. Across the United States, which types of events have the greatest economic consequences?
+
+
+We conclude that the deadliest events were tornados and excessive heat.
+The events which resulted in the greatest number of injuries were tornados and thunderstorm wind.
+The events leading to the greatest economic damage were tornados and flash floods.
+<br/>
+
+### Data Processing
+
+Load the necessary libraries.
+
+```{r, warning=FALSE}
+library(R.utils)
+library(ggplot2)
+library(knitr)
+```
+
+Download, unzip, and load the data file.
+
+```{r, warning=FALSE, cache=TRUE}
+download.file("http://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2", destfile = "storm_data.csv.bz2")
+bunzip2("storm_data.csv.bz2", overwrite=T, remove=F)
+
+storm_data <- read.csv("storm_data.csv",header = TRUE, stringsAsFactors = FALSE)
+
+# We look at the structure of this data set.
+str(storm_data)
+```
+
+We want to subset the data by the type of damamge - either economic or population health.
+
+```{r}
+data_col <- c("BGN_DATE", "EVTYPE", "FATALITIES", "INJURIES", "PROPDMG", "PROPDMGEXP", "CROPDMG", "CROPDMGEXP")
+storm_data_sub <- storm_data[data_col]
+storm_data_sub$YEAR <- as.integer(format(as.Date(storm_data_sub$BGN_DATE, "%m/%d/%Y 0:00:00"), "%Y"))
+
+head(storm_data_sub)
+str(storm_data_sub)
+```
+
+According to the Storm Data Documentation, <code>PROPDMGEXP</code> and <code>CROPDMGEXP</code> are exponents.
+We convert these to numerical exponents.
+
+```{r}
+convert_exp <- function(x){
+  x[x==" " || x==""] <- "0"
+  x[x=="H" || x=="h"] <- "100" 
+  x[x=="K" || x=="k"] <- "1000"
+  x[x=="M" || x=="m"] <- "1000000"
+  x[x=="B" || x=="b"] <- "1000000000"
+  return(as.numeric(x))
+  }
+
+storm_data_sub$PROPDMGEXP <- convert_exp(storm_data_sub$PROPDMGEXP)
+
+storm_data_sub$PROPDMGEXP[is.na(storm_data_sub$PROPDMGEXP)] = 0
+storm_data_sub$PropertyDamage = storm_data_sub$PROPDMG * 10^storm_data_sub$PROPDMGEXP
+summary(storm_data_sub$PropertyDamage)
+
+storm_data_sub$CROPDMGEXP <- convert_exp(storm_data_sub$CROPDMGEXP)
+
+storm_data_sub$CROPDMGEXP[is.na(storm_data_sub$CROPDMGEXP)] = 0
+storm_data_sub$CropDamage = storm_data_sub$CROPDMG * 10^storm_data_sub$CROPDMGEXP
+summary(storm_data_sub$CropDamage)
+```
+
+Compute the combined property and crop damage
+
+```{r}
+TOTAL_DMG <- storm_data_sub$PROPDMG + storm_data_sub$CROPDMG
+clean_storm_data <- cbind(storm_data_sub, TOTAL_DMG)
+str(clean_storm_data)
+```
+
+### Results
+
+#### Across the United States, which types of events (as indicated in the <code>EVTYPE</code> variable) are most harmful with respect to population health?
+
+First, we consider the 10 most harmful events with respect to fatalities and injuries and plot a bar chart.
+
+```{r}
+fatal_data <- aggregate(clean_storm_data$FATALITIES, by = list(clean_storm_data$EVTYPE), "sum")
+fatal_data <- fatal_data[order(-fatal_data$x), ][1:10, ]
+
+str(fatal_data)
+
+fatal_plot<- ggplot(fatal_data, aes(x = Group.1, y = x)) + geom_bar(stat = "identity", fill = "#FF0011", 
+    las = 3) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + xlab("Event Type") + 
+    ylab("Count") + ggtitle("Top Ten Fatal Events")
+
+fatal_plot
+```
+
+Next, we consider the 10 events leading to the greatest number of injuries.
+
+```{r}
+injury_data <- aggregate(clean_storm_data$INJURIES, by = list(clean_storm_data$EVTYPE), "sum")
+injury_data <- injury_data[order(-injury_data$x), ][1:10, ]
+
+str(injury_data)
+
+injury_plot<- ggplot(injury_data, aes(x = Group.1, y = x)) + geom_bar(stat = "identity", fill = "#0022FF", 
+    las = 3) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + xlab("Event Type") + 
+    ylab("Count") + ggtitle("Top Ten Causes of Injuries")
+
+injury_plot
+```
+
+#### Across the United States, which types of events have the greatest economic consequences?
+
+We consider the 10 costliest events with respect to economic damage and plot a bar chart.
+
+```{r}
+damage_data <- aggregate(clean_storm_data$TOTAL_DMG, by = list(clean_storm_data$EVTYPE), "sum")
+damage_data <- damage_data[order(-damage_data$x), ][1:10, ]
+
+str(damage_data)
+
+damage_plot<- ggplot(damage_data, aes(x = Group.1, y = x)) + geom_bar(stat = "identity", fill = "#05FF22", 
+    las = 3) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + xlab("Event Type") + 
+    ylab("Count") + ggtitle("Top Ten Events Resulting in Economic Damage")
+
+damage_plot
+```
+
+
+### Conclusions
+
+Between the years 1950 and 2011, tornados were the leading cause of both injuries and fatalitites, and property and crop damamge.
