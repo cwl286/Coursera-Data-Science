@@ -1,7 +1,7 @@
 ---
 title: "Capstone Project Milestone Report"
 author: "Chris Gomes"
-date: "August 29, 2016"
+date: "November 19, 2016"
 output: html_document
 ---
 
@@ -63,7 +63,7 @@ rm(con)
 
 ### Convert all characters to ASCII and save to text files
 
-This is necessary since the news file had characters (emoticons) that were causing this rogram to crash.
+This was necessary since the news file had characters (emoticons) that were causing the program to crash.
 ```{r eliminate non-Roman charaters, cache=TRUE}
 
 blogs <- iconv(blogs, "latin1", "ASCII", sub="")
@@ -188,7 +188,7 @@ We use unigrams, bigrams, and trigrams to find word frequencies and astrong asso
 
 tdm <- TermDocumentMatrix(corp)
 tdm <- removeSparseTerms(tdm, 0.75)
-inspect(tdm)
+# inspect(tdm)
 
 uni <- NGramTokenizer(corp, Weka_control(min = 1, max = 1))
 str(uni)
