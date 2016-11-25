@@ -38,13 +38,13 @@ unzip(dest_file)
 ```
 
 Let's see which files we've downloaded.
-```{r inspect the extracted files, cache=TRUE}
+```{r inspect the extracted files, cache=TRUE, echo=FALSE, results='hide'}
 unzip(dest_file, list = TRUE )
 ```
 
 We consider only the Enlish language files.
 ```{r inspect the English language files, cache=TRUE}
-list.files("final")
+# list.files("final")
 list.files("final/en_US")
 ```
 
@@ -80,22 +80,46 @@ save(twitter, file="twitter.txt")
 
 First, we look at properties of the files themselves.
 
-```{r file properties, cache=TRUE}
+```{r file properties, cache=TRUE, echo=FALSE}
 # Check the files sizes
 blogs_size <- file.info("final/en_US/en_US.blogs.txt")$size / 1024.0^2
 news_size <- file.info("final/en_US/en_US.news.txt")$size / 1024.0^2
 twitter_size <- file.info("final/en_US/en_US.twitter.txt")$size / 1024.0^2
 
+# line counts
+blog_lines <- length(blogs)
+news_lines <- length(news)
+twitter_lines <- length(twitter)
+
+# word counts
+blog_words <- sum(stri_count_words(blogs))
+news_words <- sum(stri_count_words(news))
+twitter_words <- sum(stri_count_words(twitter))
+```
+
+```{r print table, cache=TRUE, echo=FALSE}
+summary_table<-data.frame(source=c("Blogs","Twitter", "News"),
+                         Size_in_MB=c(blogs_size, twitter_size, news_size),
+                         Total_Lines=c(blog_lines, twitter_lines, news_lines),
+                         Total_Words=c(blog_words, twitter_words, news_words)
+                         )
+
+summary_table
+```
+
+Get data about the numbers of lines and word counts for each file.
+
+For `blogs`, we have
+```{r print blogs lines properties, cache=TRUE, echo=FALSE}
 # Use stringi to get data about numbers of lines and word counts for each file
 stri_stats_general(blogs)
 stri_stats_general(news)
 stri_stats_general(twitter)
 
-# word counts
-blog_words <- stri_count_words(blogs)
-news_words <- stri_count_words(news)
-twitter_words <- stri_count_words(twitter)
+
 ```
+
+
 
 
 We look at summaries and word distributions for each file.
