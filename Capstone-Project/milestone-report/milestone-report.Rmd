@@ -11,6 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r load libraries, echo=FALSE, message=FALSE}
 library(ggplot2)
+library(dplyr)
 library(stringi)
 library(tm)
 library(wordcloud)
@@ -48,7 +49,7 @@ We consider only the Enlish language files.
 list.files("final/en_US")
 ```
 
-```{r create data files, cache=TRUE}
+```{r create data files, cache=TRUE, echo=FALSE}
 #Read in blogs and twitter files
 blogs <- readLines("final/en_US/en_US.blogs.txt", encoding = "UTF-8", skipNul=TRUE)
 twitter <- readLines("final/en_US/en_US.twitter.txt", encoding = "UTF-8", skipNul=TRUE)
@@ -98,8 +99,8 @@ twitter_words <- sum(stri_count_words(twitter))
 ```
 
 ```{r print table, cache=TRUE, echo=FALSE}
-summary_table<-data.frame(source=c("Blogs","Twitter", "News"),
-                         Size_in_MB=c(blogs_size, twitter_size, news_size),
+summary_table<-data.frame(Source=c("Blogs","Twitter", "News"),
+                         Size_in_MB=c(round(blogs_size, digits = 2), round(twitter_size, digits = 2), round(news_size, digits = 2)),
                          Total_Lines=c(blog_lines, twitter_lines, news_lines),
                          Total_Words=c(blog_words, twitter_words, news_words)
                          )
@@ -107,39 +108,34 @@ summary_table<-data.frame(source=c("Blogs","Twitter", "News"),
 summary_table
 ```
 
-Get data about the numbers of lines and word counts for each file.
+Get data about the line counts, character counts, and 5-number summary for words for each file.
 
 For `blogs`, we have
 ```{r print blogs lines properties, cache=TRUE, echo=FALSE}
 # Use stringi to get data about numbers of lines and word counts for each file
 stri_stats_general(blogs)
+summary(stri_count_words(blogs))
+```
+For `news`, we have
+```{r print news lines properties, cache=TRUE, echo=FALSE}
+# Use stringi to get data about numbers of lines and word counts for each file
 stri_stats_general(news)
+summary(stri_count_words(news))
+```
+For `twitter`, we have
+```{r print twitter lines properties, cache=TRUE, echo=FALSE}
+# Use stringi to get data about numbers of lines and word counts for each file
 stri_stats_general(twitter)
-
-
+summary(stri_count_words(twitter))
 ```
 
 
-
-
-We look at summaries and word distributions for each file.
-
-```{r summaries and plots}
-summary(blog_words)
-qplot(blog_words, binwidth=1, xlim=c(1, 100))
-
-summary(news_words)
-qplot(news_words, binwidth=1, xlim=c(1, 100))
-
-summary(twitter_words)
-qplot(twitter_words, binwidth=1, xlim=c(1, 30))
-```
 
 ### Data Sampling
 
-Given the large  sizes of these files, we sample 10,000 lines from `blog` and 'news` and 20,000 lines from `twitter` in order to improve data processing efficiency.
+Given the large  sizes of these files, we sample 10,000 lines from each file in order to improve data processing efficiency. The resulting file is called `all_samp`.
 
-```{r create sample file, cache=TRUE}
+```{r create sample file, cache=TRUE, echo=FALSE}
 blogs_samp <- blogs[sample(1:length(blogs),10000)]
 news_samp <- news[sample(1:length(news),10000)]
 twitter_samp <- twitter[sample(1:length(twitter),10000)]
@@ -147,13 +143,24 @@ all_samp <- c(blogs_samp, news_samp, twitter_samp)
 save(all_samp, file="all_samp.txt")
 # Save the sampled data to a .txt files
 writeLines(all_samp, "../sample/all_samp.txt")
+```
 
+```{r stats for sample file, cache=TRUE, echo=FALSE}
 # Statistics for the sample
-stri_stats_general(all_samp)
-samp_words <- stri_count_words(all_samp)
+samp_size <- file.info("all_samp.txt")$size / 1024.0^2
+samp_lines <- length(all_samp)
+samp_words <- sum(stri_count_words(all_samp))
 
-summary(samp_words)
-qplot(samp_words, binwidth=1, xlim=c(1, 100))
+all_samp_table<-data.frame(Source=c("All Samples"),
+                         Size_in_MB=c(round(samp_size, digits = 2)),
+                         Total_Lines=c(samp_lines),
+                         Total_Words=c(samp_words)
+                         )
+
+all_samp_table
+
+stri_stats_general(all_samp)
+summary(stri_count_words(all_samp))
 ```
 
 
@@ -166,11 +173,12 @@ We create a corpus from the `all_samp.txt` file and then clean it. We use the te
 * Strip away all punctuation
 * Strip away all numbers
 * Strip way various non-alphanumeric characters
-* Remove stop words
+* Remove stop words (i.e. words that are uninteresting, but appear frequently in text such as "the","and", "also", ... etc.)
 * Strip away all urls
 * Remove profanity
+* Stemming to remove common word endings (e.g. ''s', 'ing', ... etc)
 
-```{r data cleaning, cache=FALSE}
+```{r data cleaning, cache=FALSE, echo=FALSE}
 corp <- Corpus(VectorSource(list(all_samp)))
 
 # Perform the transformations
@@ -195,31 +203,61 @@ profanities <- read.delim("bad-words-banned-by-google.txt",sep = ":",header = FA
 profanities <- profanities[,1]
 corp <- tm_map(corp, removeWords, profanities)
 
-# Save the cleaned corpus
-#writeCorpus(corp, path = "../sample", filenames="corp.txt")
-#corp <- readLines("corp.txt")
+# Stemming
+library(SnowballC)   
+corp <- tm_map(corp, stemDocument) 
+
+corp <- tm_map(corp, PlainTextDocument) 
  
 ```
 
 
+
 ## N-Gram Tokenization
 
-We use unigrams, bigrams, and trigrams to find word frequencies and astrong associations (i.e. correlations) bewtween words.
+We use unigrams, bigrams, and trigrams to find word frequencies and correlations bewtween words.
 
 ```{r n-gram tokenization, cache=TRUE}
 # For more information, see: https://cran.r-project.org/web/packages/tm/vignettes/tm.pdf
 
+dtm <- DocumentTermMatrix(corp)
+dtm <- removeSparseTerms(dtm, 0.75)
+
+uni_tokenizer <- function(x) NGramTokenizer(corp, Weka_control(min = 1, max = 1))
+unidtm <- DocumentTermMatrix(corp, control = list(tokenize = uni_tokenizer))
+
+bi_tokenizer <- function(x) NGramTokenizer(corp, Weka_control(min = 2, max = 2))
+bidtm <- DocumentTermMatrix(corp, control = list(tokenize = bi_tokenizer))
+
+tri_tokenizer <- function(x) NGramTokenizer(corp, Weka_control(min = 3, max = 3))
+tridtm <- DocumentTermMatrix(corp, control = list(tokenize = tri_tokenizer))
+```
+
+```{r create transpose of tdm, cache=TRUE, echo=FALSE}
 tdm <- TermDocumentMatrix(corp)
-tdm <- removeSparseTerms(tdm, 0.75)
-# inspect(tdm)
+tdm<- removeSparseTerms(tdm, 0.75)
+```
 
-uni <- NGramTokenizer(corp, Weka_control(min = 1, max = 1))
-str(uni)
+## Exploratory Data Analysis
 
-bi <- NGramTokenizer(corp, Weka_control(min = 2, max = 2))
-str(bi)
+We will use histograms and word clouds to explore the frequencies of words in our corpus.
+Let us start by looking a words with high frequency:
 
-tri <- NGramTokenizer(corp, Weka_control(min = 3, max = 3))
-str(tri)
+```{r organize words by frequency, cache=TRUE, echo=FALSE}
+unifreq <- sort(colSums(as.matrix(unidtm)), decreasing=TRUE)
+uniwordfreq <- data.frame(word=names(unifreq), freq=unifreq)
+paste("Unigrams - Top 5 highest frequencies")
+head(uniwordfreq,5)
+```
+
+
+```{r plot most common words, cache=TRUE, echo=FALSE}
+uniwordfreq %>% 
+    filter(freq > 1000) %>%
+    ggplot(aes(word,freq)) +
+    geom_bar(stat="identity") +
+    ggtitle("Unigrams with frequencies > 1000") +
+    xlab("Unigrams") + ylab("Frequency") +
+    theme(axis.text.x=element_text(angle=45, hjust=1))
 ```
 
