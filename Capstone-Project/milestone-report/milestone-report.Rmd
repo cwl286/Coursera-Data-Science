@@ -240,18 +240,18 @@ tdm<- removeSparseTerms(tdm, 0.75)
 
 ## Exploratory Data Analysis
 
-We will use histograms and word clouds to explore the frequencies of words in our corpus.
+We use histograms and word clouds to explore the frequencies of words in our corpus.
 Let us start by looking a words with high frequency:
 
-```{r organize words by frequency, cache=TRUE, echo=FALSE}
+```{r organize unigrams by frequency, cache=TRUE, echo=FALSE}
 unifreq <- sort(colSums(as.matrix(unidtm)), decreasing=TRUE)
 uniwordfreq <- data.frame(word=names(unifreq), freq=unifreq)
-paste("Unigrams - Top 5 highest frequencies")
-head(uniwordfreq,5)
+paste("Unigrams - 10 Most Frequent")
+head(uniwordfreq,10)
 ```
 
 
-```{r plot most common words, cache=TRUE, echo=FALSE}
+```{r plot most common unigrams, cache=TRUE, echo=FALSE}
 uniwordfreq %>% 
     filter(freq > 1000) %>%
     ggplot(aes(word,freq)) +
@@ -260,4 +260,57 @@ uniwordfreq %>%
     xlab("Unigrams") + ylab("Frequency") +
     theme(axis.text.x=element_text(angle=45, hjust=1))
 ```
+
+```{r organize bigrams by frequency, cache=TRUE, echo=FALSE}
+bifreq <- sort(colSums(as.matrix(bidtm)), decreasing=TRUE)
+biwordfreq <- data.frame(word=names(bifreq), freq=bifreq)
+paste("Bigrams - 10 Most Frequent")
+head(biwordfreq,10)
+```
+
+
+```{r plot most common bigrams, cache=TRUE, echo=FALSE}
+biwordfreq %>% 
+    filter(freq > 100) %>%
+    ggplot(aes(word,freq)) +
+    geom_bar(stat="identity") +
+    ggtitle("Bigrams with frequencies > 100") +
+    xlab("Bigrams") + ylab("Frequency") +
+    theme(axis.text.x=element_text(angle=45, hjust=1))
+```
+
+```{r organize trigrams by frequency, cache=TRUE, echo=FALSE}
+trifreq <- sort(colSums(as.matrix(tridtm)), decreasing=TRUE)
+triwordfreq <- data.frame(word=names(trifreq), freq=trifreq)
+paste("Trigrams - 10 Most Frequent")
+head(triwordfreq,10)
+```
+
+
+```{r plot most common trigrams, cache=TRUE, echo=FALSE}
+triwordfreq %>% 
+    filter(freq > 10) %>%
+    ggplot(aes(word,freq)) +
+    geom_bar(stat="identity") +
+    ggtitle("Trigrams with frequencies > 10") +
+    xlab("Trigrams") + ylab("Frequency") +
+    theme(axis.text.x=element_text(angle=45, hjust=1))
+```
+
+
+Let us look at the word cloud for unigrams as this tend to be visually more interesting than histograms.
+
+### Top 50 Unigrams
+```{r word cloud for unigrams, cache=TRUE}
+set.seed(666)
+wordcloud(names(unifreq), unifreq, max.words=50, scale=c(5, .1), colors=brewer.pal(8, "Dark2"))
+```
+
+## Observations and Next Steps for the Prediction App
+
+* Stemming has made building the corpus more efficient, but we need to address the potential for awkward choices in the App. For example, "happi mother day" is in the corpus instead of "happy mothers day"
+
+* Removing stop words also makes for a clean corpus, but we should not exclude them from the App.
+
+Even after cleaning the corpus, it still takes some time to process the data. We need to find ways to process the data sets more quickly if our App is going to be useful.
 
